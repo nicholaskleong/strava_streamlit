@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 import os
 
 from strava import *
@@ -38,7 +39,16 @@ if check_password():
     activities = get_activities(access_token)
     activities = clean_activities(activities)
     runs = make_runs(activities)
-    st.dataframe(activities)
-    print(runs)
-    st.dataframe(runs[['distance_km','moving_time','average_speed','min_km']])
-    st.write('Text asdf')
+
+    st.dataframe(runs)
+    st.subheader('Weekly Distance')
+    start_date = st.date_input('Start Date',value = datetime(2023,1,1))
+    weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
+    st.line_chart(weekly,y='distance_km')
+
+    idx = st.selectbox('Select run to display detailed data',
+                 options = runs)
+    # idx = 8731733215
+
+    run = Run(access_token,idx)
+    st.plotly_chart(run.make_split_plot())

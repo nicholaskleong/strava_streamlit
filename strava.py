@@ -5,6 +5,7 @@ import pandas as pd
 from datetime import timedelta,datetime
 import pytz
 import streamlit as st
+import plotly.express as px
 
 BASE_URL = 'https://www.strava.com/'
 @st.cache_data
@@ -45,7 +46,7 @@ def calculate_km_interval(speed_ms):
     out = f'{minutes:.0f}:{seconds:02.0f}'
     return out
 def make_runs(activities):
-    cols = ['start_date','distance_km','moving_time','average_speed']
+    cols = ['id','start_date','distance_km','moving_time','average_speed']
     runs = activities[activities.sport_type.isin(['Run','TrailRun'])][cols]
     # runs['min_km']=runs.apply(lambda row: timedelta(seconds = 1/row['average_speed']*1000),axis=1)
     runs['min_km'] = runs.average_speed.apply(calculate_km_interval)
@@ -68,3 +69,34 @@ def distance_last_week(runs):
 
 week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
+def get_activity(access_token, idx):
+    header = {'Authorization': 'Bearer ' + access_token}
+    param = {}
+    activity_url = f'{BASE_URL}/api/v3/activities/{idx}'
+    activity = requests.get(activity_url, headers=header, params=param).json()
+    return activity
+
+class Run(object):
+    def __init__(self,access_token,idx):
+        self.idx = idx
+        self.access_token = access_token
+
+        self.data = self.get_data()
+        self.splits = self.get_splits()
+        
+    def get_data(self):
+        act = get_activity(self.access_token,self.idx)
+        return act
+    def get_splits(self):
+        splits = pd.json_normalize(self.data['splits_metric'])
+        splits['km_interval'] = splits.apply(lambda row: calculate_km_interval(row.average_speed),axis=1)
+        return splits
+    def make_split_plot(self):
+        fig = px.bar(self.splits,'average_speed',
+             text = 'km_interval',
+            labels = {'index':'Kilometre',
+                     'average_speed':'Pace'})
+        fig['layout']['yaxis']['autorange'] = "reversed"
+        fig['layout']['xaxis']['showticklabels'] = False
+        fig.update_traces(marker_color='green')
+        return fig
