@@ -31,8 +31,8 @@ def check_password():
         # Password correct.
         return True
 
-# if check_password():
-if True:
+if check_password():
+# if True:
     st.header("Strava data explorer")
     access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
