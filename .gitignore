@@ -1,2 +1,4 @@
 .streamlit
 *.pyc
+dev*
+.env

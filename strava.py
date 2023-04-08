@@ -6,6 +6,7 @@ from datetime import timedelta,datetime
 import pytz
 import streamlit as st
 import plotly.express as px
+import polyline
 
 BASE_URL = 'https://www.strava.com/'
 @st.cache_data
@@ -46,11 +47,13 @@ def calculate_km_interval(speed_ms):
     out = f'{minutes:.0f}:{seconds:02.0f}'
     return out
 def make_runs(activities):
-    cols = ['id','start_date','distance_km','moving_time','average_speed']
+    cols = ['id','name','start_date','distance_km','moving_time','average_speed']
     runs = activities[activities.sport_type.isin(['Run','TrailRun'])][cols]
     # runs['min_km']=runs.apply(lambda row: timedelta(seconds = 1/row['average_speed']*1000),axis=1)
     runs['min_km'] = runs.average_speed.apply(calculate_km_interval)
+    runs['label'] = runs.apply(lambda row: f"{row.id} - {row['name']} ({row.distance_km:0.1f}km)", axis=1)
     runs = runs.set_index('start_date')
+    runs = runs.sort_index(ascending=False)
     return runs
 
 def activites_per_week(runs,start_date=datetime(2023,1,1)):
@@ -99,4 +102,11 @@ class Run(object):
         fig['layout']['yaxis']['autorange'] = "reversed"
         fig['layout']['xaxis']['showticklabels'] = False
         fig.update_traces(marker_color='green')
+        return fig
+    def make_map(self):
+        mp = pd.DataFrame(polyline.decode(self.data['map']['polyline']))
+        mp.columns = ['lat','long']
+        fig = px.line_mapbox(mp,'lat','long',
+                            mapbox_style = 'open-street-map',
+                            zoom=13)
         return fig

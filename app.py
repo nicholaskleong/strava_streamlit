@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 
 from strava import *
+st. set_page_config(layout="wide")
 
 def check_password():
     """Returns `True` if the user had the correct password."""
@@ -32,8 +33,8 @@ def check_password():
         # Password correct.
         return True
 
-if check_password():
-# if True:
+# if check_password():
+if True:
     st.header("Strava data explorer")
     access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
@@ -46,9 +47,14 @@ if check_password():
     weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
     st.line_chart(weekly,y='distance_km')
 
-    idx = st.selectbox('Select run to display detailed data',
-                 options = runs)
-    # idx = 8731733215
-
+    run_select= st.selectbox('Select run to display detailed data',
+                options = runs.label,
+                format_func = lambda x: x.split(' - ')[1])
+    print(run_select)
+    idx = run_select.split(' - ')[0]
+    col1,col2 = st.columns(2)
     run = Run(access_token,idx)
-    st.plotly_chart(run.make_split_plot())
+    col1.subheader('Kilometre Pace')
+    col1.plotly_chart(run.make_split_plot())
+    col2.subheader('Map')
+    col2.plotly_chart(run.make_map())
