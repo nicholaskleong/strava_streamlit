@@ -43,8 +43,8 @@ if True:
 
     st.dataframe(runs)
     st.subheader('Weekly Distance')
-    start_date = st.date_input('Start Date',value = datetime(2023,1,1))
-    weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
+    # start_date = st.date_input('Start Date',value = datetime(2023,1,1))
+    weekly = runs['distance_km'].resample('W').sum()
     st.line_chart(weekly,y='distance_km')
 
     run_select= st.selectbox('Select run to display detailed data',
