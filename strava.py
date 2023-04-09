@@ -9,7 +9,7 @@ import plotly.express as px
 import polyline
 
 BASE_URL = 'https://www.strava.com/'
-@st.cache_data(ttl = 3600)
+
 def get_access_token(client_id,client_secret,refresh_token) ->str:
     '''Use refresh token to get new access token'''
     auth_url = f'{BASE_URL}oauth/token'
@@ -26,9 +26,7 @@ def get_access_token(client_id,client_secret,refresh_token) ->str:
     access_token = res.json()['access_token']
     return access_token
 
-@st.cache_data(ttl = 3600)
 def get_activities(access_token):
-
     header = {'Authorization': 'Bearer ' + access_token}
     param = {'per_page': 200, 'page': 1}
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
@@ -55,6 +53,15 @@ def make_runs(activities):
     runs = runs.set_index('start_date')
     runs = runs.sort_index(ascending=False)
     return runs
+
+@st.cache_data(ttl=3600)
+def init_data():
+    access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
+    activities = get_activities(access_token)
+    activities = clean_activities(activities)
+    runs = make_runs(activities)
+    st.session_state['access_token'] = access_token
+    st.session_state['runs'] = runs
 
 def activites_per_week(runs,start_date=datetime(2023,1,1)):
     num_weeks = datetime.today().isocalendar()[1]
