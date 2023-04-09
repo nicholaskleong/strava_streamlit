@@ -6,6 +6,7 @@ from datetime import timedelta,datetime
 import pytz
 import streamlit as st
 import plotly.express as px
+from plotly.subplots import make_subplots
 import polyline
 
 BASE_URL = 'https://www.strava.com/'
@@ -90,9 +91,10 @@ class Run(object):
     def __init__(self,access_token,idx):
         self.idx = idx
         self.access_token = access_token
-
+        self.fields = ['time','altitude','latlng','velocity_smooth']
         self.data = self.get_data()
         self.splits = self.get_splits()
+        self.stream_df = self.get_stream_data()
     
     def __repr__(self):
         return f"{self.data['name']} - {self.data['distance']/1000:0.1f}km"
@@ -107,7 +109,9 @@ class Run(object):
         fig = px.bar(self.splits,'average_speed',
              text = 'km_interval',
             labels = {'index':'Kilometre',
-                     'average_speed':'Pace'})
+                     'average_speed':'Pace'},
+            width=400,
+            height=400)
         fig['layout']['yaxis']['autorange'] = "reversed"
         fig['layout']['xaxis']['showticklabels'] = False
         fig.update_traces(marker_color='green')
@@ -117,5 +121,47 @@ class Run(object):
         mp.columns = ['lat','long']
         fig = px.line_mapbox(mp,'lat','long',
                             mapbox_style = 'open-street-map',
-                            zoom=13)
+                            zoom=13,
+                            width=600,
+                            height=800)
+        return fig
+    
+    def _get_streams(self,field):
+        header = {'Authorization': 'Bearer ' + self.access_token}
+        param = {'keys':[field], 'key_by_type':True}
+        activity_stream_url = f'{BASE_URL}/api/v3/activities/{self.idx}/streams'
+        activity_stream = requests.get(activity_stream_url, headers=header, params=param).json()
+        return activity_stream
+
+    def get_stream_data(self):
+        dat =[]
+        for field in self.fields:
+            streams = self._get_streams(field)
+            srs = pd.Series(data = streams[field]['data'],index = streams['distance']['data'])
+            srs.name = field
+            dat.append(srs)
+        df = pd.concat(dat,axis=1)
+        return df
+    def make_analysis_plot(self):
+        n=10
+        stream_df = self.stream_df        
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_scatter(x=stream_df.index,
+                        y=stream_df['altitude'],
+                        name = 'altitude',
+                        mode='lines',
+                        secondary_y=False,
+                        marker_color='#EE964B'
+                    )
+        fig.add_scatter(x=stream_df.index,
+                        y=stream_df['velocity_smooth'].rolling(n).median(),
+                        name = 'speed',
+                        mode='lines',
+                        secondary_y=True,
+                        marker_color = '#0D3B66'
+                    )
+        fig.update_layout(
+            height = 600,
+            width = 1200
+        )
         return fig
