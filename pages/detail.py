@@ -10,7 +10,7 @@ runs = st.session_state['runs']
 
 
 run_select= st.selectbox('Select run to display detailed data',
-            options = runs.label,
+            options = runs.label.iloc[::-1],
             format_func = lambda x: x.split(' - ')[1])
 print(run_select)
 idx = run_select.split(' - ')[0]
