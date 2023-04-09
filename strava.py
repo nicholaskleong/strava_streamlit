@@ -9,7 +9,7 @@ import plotly.express as px
 import polyline
 
 BASE_URL = 'https://www.strava.com/'
-@st.cache_data
+@st.cache_data(ttl = 3600)
 def get_access_token(client_id,client_secret,refresh_token) ->str:
     '''Use refresh token to get new access token'''
     auth_url = f'{BASE_URL}oauth/token'
@@ -26,7 +26,7 @@ def get_access_token(client_id,client_secret,refresh_token) ->str:
     access_token = res.json()['access_token']
     return access_token
 
-@st.cache_data
+@st.cache_data(ttl = 3600)
 def get_activities(access_token):
 
     header = {'Authorization': 'Bearer ' + access_token}
@@ -86,7 +86,9 @@ class Run(object):
 
         self.data = self.get_data()
         self.splits = self.get_splits()
-        
+    
+    def __repr__(self):
+        return f"{self.data['name']} - {self.data['distance']/1000:0.1f}km"
     def get_data(self):
         act = get_activity(self.access_token,self.idx)
         return act
