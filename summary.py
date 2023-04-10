@@ -22,7 +22,7 @@ col4.plotly_chart(make_gauge(distance_last_week(runs),25,f"Distance last 7 Days"
 
 #Heatmap
 start_date,end_date = datetime.today()-timedelta(days=42),datetime.today()
-dist,text,yticks = make_plot_data(runs,datetime.today()-timedelta(days=49),datetime.today())
+dist,text,yticks = make_plot_data(runs,datetime.today().replace(tzinfo=tz)-timedelta(days=49),datetime.today().replace(tzinfo=tz))
 fig,ax = make_heatmap(dist,text,yticks)
 st.pyplot(fig)
 
