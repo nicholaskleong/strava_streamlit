@@ -68,7 +68,7 @@ def init_data():
     st.session_state['access_token'] = access_token
     st.session_state['runs'] = runs
 
-def activites_per_week(runs,start_date=datetime(datetime.today().year,1,1,tzinfo=tz)):
+def activites_per_week(runs,start_date=datetime(datetime.today().replace(tzinfo=tz).year,1,1,tzinfo=tz)):
     num_weeks = datetime.today().isocalendar()[1]
     num_activites = len(runs[start_date:])
     runs_per_week = num_activites/num_weeks
@@ -78,12 +78,12 @@ def activites_last_week(runs):
     return len(runs[datetime.today()-timedelta(days=7):])
     
 def distance_last_week(runs):
-    temp = runs[datetime.today()-timedelta(days=7):]
+    temp = runs[datetime.today().replace(tzinfo=tz)-timedelta(days=7):]
     dist_last_week = temp['distance_km'].sum()
     return dist_last_week
 
 def distance_this_year(runs):
-    temp = runs[datetime(datetime.today().year,1,1,tzinfo=tz):]
+    temp = runs[datetime(datetime.today().replace(tzinfo=tz).year,1,1,tzinfo=tz):]
     dist_this_year = temp['distance_km'].sum()
     return dist_this_year
 def distance_this_month(runs):
