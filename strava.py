@@ -198,8 +198,8 @@ def make_gauge(value,target,title,suffix):
         gauge = {'axis': {'range': [None, target]}},
     ))
     fig.update_layout(
-        height=300,
-        width=300,
+        height=270,
+        width=270,
         font = {'color': "Black"}
     )
     return fig
