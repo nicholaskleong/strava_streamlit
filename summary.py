@@ -13,14 +13,12 @@ runs = st.session_state['runs']
 
 #Metrics
 
-# Distance this year
-# Runs Per week
-# Distance Last 7 days
 col1, col2, col3,col4 = st.columns(4)
-col1.metric("Runs per Week", f"{activites_per_week(runs):0.1f}")
-col2.metric("Distance this Year", f"{distance_this_year(runs):0.0f} km",)
-col3.metric(f"Distance {datetime.today().strftime('%B')}", f"{distance_this_month(runs):0.1f} km")
-col4.metric("Distance Last 7 Days", f"{distance_last_week(runs):0.1f} km")
+col1.plotly_chart(make_number(activites_per_week(runs),"Runs per Week",''))
+col2.plotly_chart(make_number(distance_this_year(runs),"Distance this Year",'km'))
+col3.plotly_chart(make_gauge(distance_this_month(runs),100,f"Distance {datetime.today().strftime('%B')}",'km'))
+col4.plotly_chart(make_gauge(distance_last_week(runs),25,f"Distance last 7 Days",'km'))
+
 
 #Heatmap
 start_date,end_date = datetime.today()-timedelta(days=42),datetime.today()
@@ -34,3 +32,6 @@ st.subheader('2023 Weekly Distance')
 # weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
 # st.line_chart(weekly,y='distance_km')
 st.plotly_chart(make_weekly_distance_plot(runs.loc[datetime(2023,1,1):]))
+
+st.subheader('Recent Runs')
+st.dataframe(recent_runs(runs), )

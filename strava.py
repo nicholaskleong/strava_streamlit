@@ -8,6 +8,7 @@ import pytz
 import streamlit as st
 import plotly.express as px
 from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 import polyline
 
 import matplotlib.pyplot as plt
@@ -49,7 +50,7 @@ def calculate_km_interval(speed_ms):
     out = f'{minutes:.0f}:{seconds:02.0f}'
     return out
 def make_runs(activities):
-    cols = ['id','name','start_date','distance_km','moving_time','average_speed']
+    cols = ['id','name','start_date','distance_km','moving_time','elapsed_time','average_speed']
     runs = activities[activities.sport_type.isin(['Run','TrailRun'])][cols]
     # runs['min_km']=runs.apply(lambda row: timedelta(seconds = 1/row['average_speed']*1000),axis=1)
     runs['min_km'] = runs.average_speed.apply(calculate_km_interval)
@@ -58,7 +59,7 @@ def make_runs(activities):
     runs = runs.sort_index()
     return runs
 
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1200)
 def init_data():
     access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
@@ -167,6 +168,55 @@ def make_weekly_distance_plot(runs):
     fig = px.line(df,y='distance_km')
     return fig
 
+def recent_runs(runs):
+    n = 10
+    display_df = runs.iloc[-n:]
+    display_df = display_df.reset_index(drop=False)
+    col_map = {'start_date':'Date','name':'Name','distance_km':'Distance','min_km':'Pace','elapsed_time':'Time'}
+    display_df = display_df[[col for col in col_map.keys()]]
+    display_df = display_df.rename(col_map,axis=1)
+    display_df['Date'] = display_df.Date.dt.strftime('%d-%b-%Y')
+    display_df['Time'] = display_df.Time.apply(format_seconds)
+    return display_df
+
+def format_seconds(seconds):
+    h,rem = divmod(seconds,3600)
+    m,s = divmod(rem,60)
+    time_str = ''
+    if h !=0:
+        time_str+= f'{h}h '
+    time_str+= f'{m}m {s}s'
+    return time_str
+
+def make_gauge(value,target,title,suffix):
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = value,
+        title = {'text': title},
+        number = {"suffix": suffix},
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        gauge = {'axis': {'range': [None, target]}},
+    ))
+    fig.update_layout(
+        height=300,
+        width=300,
+        font = {'color': "Black"}
+    )
+    return fig
+def make_number(value,title,suffix):
+    fig = go.Figure(go.Indicator(
+        mode = "number",
+        value = value,
+        title = {'text': title},
+        number = {"suffix": suffix},
+        domain = {'x': [0, 1], 'y': [0, 1]},
+    ))
+    fig.update_layout(
+        height=300,
+        width=300,
+        font = {'color': "Black"}
+    )
+    return fig
 
 class Run(object):
     def __init__(self,access_token,idx):
