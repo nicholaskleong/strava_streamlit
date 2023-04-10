@@ -31,7 +31,7 @@ st.subheader('2023 Weekly Distance')
 # start_date = st.date_input('Start Date',value = datetime(2023,1,1))
 # weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
 # st.line_chart(weekly,y='distance_km')
-st.plotly_chart(make_weekly_distance_plot(runs.loc[datetime(2023,1,1):]))
+st.plotly_chart(make_weekly_distance_plot(runs.loc[datetime(2023,1,1,tzinfo=tz):]))
 
 st.subheader('Recent Runs')
 st.dataframe(recent_runs(runs), )
