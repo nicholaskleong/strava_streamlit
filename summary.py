@@ -3,12 +3,19 @@ from datetime import datetime
 import os
 
 from strava import *
+import strava_auth
 st. set_page_config(page_title='Summary',layout="wide")
+
+
 
 st.header("Strava data explorer")
 if 'access_token' not in st.session_state:
-    init_data()
+    strava_auth.login_header()
+    strava_auth.authenticate()
+
+
 access_token = st.session_state['access_token']
+init_data(access_token)
 runs = st.session_state['runs']
 
 #Metrics

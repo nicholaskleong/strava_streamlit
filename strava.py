@@ -60,8 +60,8 @@ def make_runs(activities):
     return runs
 
 @st.cache_data(ttl=1200)
-def init_data():
-    access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
+def init_data(access_token):
+    # access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
     activities = clean_activities(activities)
     runs = make_runs(activities)
