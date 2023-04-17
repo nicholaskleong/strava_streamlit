@@ -2,3 +2,4 @@ plotly
 geopandas
 polyline
 matplotlib
+httpx
