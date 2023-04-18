@@ -49,14 +49,14 @@ def calculate_km_interval(speed_ms):
     minutes, seconds = divmod(km_s, 60)
     out = f'{minutes:.0f}:{seconds:02.0f}'
     return out
-def make_runs(activities):
-    cols = ['id','name','start_date','distance_km','moving_time','elapsed_time','average_speed']
-    runs = activities[activities.sport_type.isin(['Run','TrailRun'])][cols]
-    # runs['min_km']=runs.apply(lambda row: timedelta(seconds = 1/row['average_speed']*1000),axis=1)
+def filter_activities(activities,act_list):
+    cols = ['id','name','start_date','distance_km','moving_time','elapsed_time','average_speed','sport_type']
+    runs = activities[activities.sport_type.isin(act_list)][cols]
     runs['min_km'] = runs.average_speed.apply(calculate_km_interval)
     runs['label'] = runs.apply(lambda row: f"{row.id} - {row['name']} ({row.distance_km:0.1f}km)", axis=1)
     runs = runs.set_index('start_date')
     runs = runs.sort_index()
+
     return runs
 
 @st.cache_data(ttl=1200)
@@ -64,9 +64,8 @@ def init_data(access_token):
     # access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
     activities = clean_activities(activities)
-    runs = make_runs(activities)
     st.session_state['access_token'] = access_token
-    st.session_state['runs'] = runs
+    st.session_state['activities'] = activities
 
 def activites_per_week(runs,start_date=datetime(datetime.today().replace(tzinfo=tz).year,1,1,tzinfo=tz)):
     num_weeks = datetime.today().isocalendar()[1]

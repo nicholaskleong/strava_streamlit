@@ -9,11 +9,11 @@ if 'access_token' not in st.session_state:
     strava_auth.authenticate()
 access_token = st.session_state['access_token']
 init_data(access_token)
-runs = st.session_state['runs']
+filtered_activities = st.session_state['filtered_activities']
 
 
 run_select= st.selectbox('Select run to display detailed data',
-            options = runs.label.iloc[::-1],
+            options = filtered_activities.label.iloc[::-1],
             format_func = lambda x: x.split(' - ')[1])
 print(run_select)
 idx = run_select.split(' - ')[0]
