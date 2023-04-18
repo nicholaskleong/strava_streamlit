@@ -15,8 +15,7 @@ if 'access_token' not in st.session_state:
 
 
 access_token = st.session_state['access_token']
-init_data(access_token)
-activities = st.session_state['activities']
+activities = init_data(access_token)
 act_list = st.multiselect('Activities',activities.sport_type.unique(), default = activities.sport_type.unique()[:3])
 filtered_activities = filter_activities(activities,act_list)
 st.session_state['filtered_activities'] = filtered_activities

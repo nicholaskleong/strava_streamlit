@@ -64,8 +64,7 @@ def init_data(access_token):
     # access_token = get_access_token(os.environ["client_id"],os.environ["client_secret"],os.environ["refresh_token"])
     activities = get_activities(access_token)
     activities = clean_activities(activities)
-    st.session_state['access_token'] = access_token
-    st.session_state['activities'] = activities
+    return activities
 
 def activites_per_week(runs,start_date=datetime(datetime.today().replace(tzinfo=tz).year,1,1,tzinfo=tz)):
     num_weeks = datetime.today().isocalendar()[1]
