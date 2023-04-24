@@ -99,67 +99,6 @@ def get_activity(access_token, idx):
     activity = requests.get(activity_url, headers=header, params=param).json()
     return activity
 
-def make_array(df,data_col,start_date,end_date):
-    size = (max(df['y']),max(df['x']))
-    arr = np.zeros(size)
-    for i,row in df.iterrows():
-        arr[(row.y-1,row.x-1)] = row[data_col]
-    arr = arr[start_date.isocalendar().week-1:end_date.isocalendar().week]
-    return arr
-def make_str_array(df,data_col,start_date,end_date,suffix=''):
-    size = (max(df['y']),max(df['x']))
-    arr = np.full(size,'',dtype=object)
-    for i,row in df.iterrows():
-        arr[(row.y-1,row.x-1)] = row[data_col] + suffix
-    arr = arr[start_date.isocalendar().week-1:end_date.isocalendar().week]
-    return arr
-
-def join_str_arrays(arr1,arr2,arr1_suffix=''):
-    if arr1.dtype =='float64':
-        arr = arr1.round(2).astype(str).copy()
-    else:
-        arr = arr1.astype(str).copy()
-    for idx, val in np.ndenumerate(arr):
-        arr[idx]=str(arr[idx])+arr1_suffix+f'\n{arr2[idx]}'
-    return arr
-
-def make_plot_data(runs,start_date,end_date):
-    runs['min_km'] = runs.average_speed.apply(calculate_km_interval)
-
-    runs['time'] = runs.moving_time.apply(lambda x: ':'.join(str(timedelta(seconds=x)).split(':')[-3:-1]))
-    df = runs.loc[start_date:end_date].copy()
-
-
-    dist =make_array(df,'distance_km',start_date,end_date)
-    time =make_str_array(df,'time',start_date,end_date, ' hrs')
-    pace = make_str_array(df,'min_km',start_date,end_date, ' min/km')
-    
-    text = join_str_arrays(dist,time,' km')
-    text = join_str_arrays(text,pace)
-    yticks = list(pd.date_range(start_date,end_date-timedelta(1),freq='W-Mon').strftime('%d-%b-%Y'))
-    return dist[1:,:],text[1:,:],yticks
-
-def make_heatmap(dist,text,yticks):
-    sz = 18
-    ar = 0.6
-    fig, ax = plt.subplots(1,1,figsize=(14,5))
-    im = ax.imshow(dist, cmap='BuGn',aspect=.6)
-
-    # Add values to each cell
-    for i in range(text.shape[0]):
-        for j in range(text.shape[1]):
-            texta = ax.text(j, i, text[i, j],
-                           ha="center", va="center", color="black")
-
-    # Add a label to the colorbar
-    cbar = ax.figure.colorbar(im, ax=ax)
-    cbar.ax.set_ylabel("Distance(km)", rotation=-90, va="bottom")
-    # Show the plot
-    plt.xticks(list(range(7)),week)
-    ax.xaxis.tick_top()
-    plt.yticks(list(range(len(yticks))),yticks)
-    return fig,ax
-
 def make_weekly_distance_plot(runs):
     df = runs.distance_km.resample('W').sum()
     fig = px.line(df,y='distance_km')
@@ -340,7 +279,7 @@ class Heatplot(object):
     def make_yticks(self):
         yticks = list(pd.date_range(self.start_date,periods=self.n_weeks,freq='W-Mon').strftime('%d-%b-%Y'))
         return yticks
-    def join_str_arrays(arr1,arr2,arr1_suffix=''):
+    def join_str_arrays(self,arr1,arr2,arr1_suffix=''):
         if arr1.dtype =='float64':
             arr = arr1.round(2).astype(str).copy()
         else:
@@ -349,8 +288,8 @@ class Heatplot(object):
             arr[idx]=str(arr[idx])+arr1_suffix+f'\n{arr2[idx]}'
         return arr
     def make_text(self):
-        text = join_str_arrays(self.dist,self.time,' km')
-        text = join_str_arrays(text,self.pace)
+        text = self.join_str_arrays(self.dist,self.time,' km')
+        text = self.join_str_arrays(text,self.pace)
         return text
     def make_heatmap(self):
         sz = 18
