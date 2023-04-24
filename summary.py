@@ -29,10 +29,9 @@ col4.plotly_chart(make_gauge(distance_last_week(filtered_activities),25,f"Distan
 
 
 #Heatmap
-start_date,end_date = datetime.today()-timedelta(days=42),datetime.today()
-dist,text,yticks = make_plot_data(filtered_activities,datetime.today().replace(tzinfo=tz)-timedelta(days=49),datetime.today().replace(tzinfo=tz))
-fig,ax = make_heatmap(dist,text,yticks)
-st.pyplot(fig)
+hm = Heatplot(filtered_activities,n_weeks=8)
+fig,ax = hm.make_heatmap()
+st.pyplot(fig,use_container_width=False)
 
 #Weekly Distance
 st.subheader('2023 Weekly Distance')

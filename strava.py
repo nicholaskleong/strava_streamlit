@@ -128,8 +128,7 @@ def make_plot_data(runs,start_date,end_date):
 
     runs['time'] = runs.moving_time.apply(lambda x: ':'.join(str(timedelta(seconds=x)).split(':')[-3:-1]))
     df = runs.loc[start_date:end_date].copy()
-    df['y'] = df.index.isocalendar().week
-    df['x']= df.index.isocalendar().day
+
 
     dist =make_array(df,'distance_km',start_date,end_date)
     time =make_str_array(df,'time',start_date,end_date, ' hrs')
@@ -294,3 +293,82 @@ class Run(object):
             width = 1200
         )
         return fig
+    
+class Heatplot(object):
+    def __init__(self,df,n_weeks,end_date = datetime.today()):
+        tz = pytz.timezone('Australia/Sydney')
+        self.n_weeks=n_weeks
+        
+        if end_date:
+            self.end_date =end_date.replace(tzinfo=tz)
+        else:
+            self.end_date = datetime.today().replace(tzinfo=tz)
+        self.start_date = self._get_start_date()
+        self.df = df = df.loc[self.start_date:self.end_date].copy()
+        self.augment_df()        
+        self.dist = self.make_array('distance_km')
+        self.time = self.make_array('time',' hrs')
+        self.pace = self.make_array('min_km',' min/km')
+        self.yticks = self.make_yticks()
+        self.text = self.make_text()
+        
+    
+    def _get_start_date(self):
+        start_date = (self.end_date-timedelta(7*(self.n_weeks-1))).replace(tzinfo=tz)
+        start_date = start_date - timedelta(start_date.weekday() if start_date.weekday()!=0 else 7)
+        return start_date
+    
+    def augment_df(self):
+        self.df['min_km'] = self.df.average_speed.apply(calculate_km_interval)
+        self.df['time'] = self.df.moving_time.apply(lambda x: ':'.join(str(timedelta(seconds=x)).split(':')[-3:-1]))
+        self.df['y'] = self.df.index.isocalendar().week
+        self.df['x']= self.df.index.isocalendar().day
+    
+    def make_array(self,data_col,suffix=False):
+        last_row = self.end_date.isocalendar().week if self.end_date.weekday()!=0 else self.end_date.isocalendar().week-1
+        size = (last_row,7)
+        if suffix:
+            arr = np.full(size,'',dtype=object)
+        else:
+            arr = np.zeros(size)
+        for i,row in self.df.iterrows():
+            arr[(row.y-1,row.x-1)] = row[data_col]
+            if suffix:
+                arr[(row.y-1,row.x-1)] += suffix
+        arr = arr[-self.n_weeks:]
+        return arr
+    def make_yticks(self):
+        yticks = list(pd.date_range(self.start_date,periods=self.n_weeks,freq='W-Mon').strftime('%d-%b-%Y'))
+        return yticks
+    def join_str_arrays(arr1,arr2,arr1_suffix=''):
+        if arr1.dtype =='float64':
+            arr = arr1.round(2).astype(str).copy()
+        else:
+            arr = arr1.astype(str).copy()
+        for idx, val in np.ndenumerate(arr):
+            arr[idx]=str(arr[idx])+arr1_suffix+f'\n{arr2[idx]}'
+        return arr
+    def make_text(self):
+        text = join_str_arrays(self.dist,self.time,' km')
+        text = join_str_arrays(text,self.pace)
+        return text
+    def make_heatmap(self):
+        sz = 18
+        ar = 0.6
+        fig, ax = plt.subplots(1,1,figsize=(10,self.n_weeks*0.65))
+        im = ax.imshow(self.dist, cmap='BuGn',aspect=.6)
+
+        # Add values to each cell
+        for i in range(self.text.shape[0]):
+            for j in range(self.text.shape[1]):
+                texta = ax.text(j, i, self.text[i, j],
+                        ha="center", va="center", color="black",fontdict={'size' : 7})
+
+        # Add a label to the colorbar
+        cbar = ax.figure.colorbar(im, ax=ax)
+        cbar.ax.set_ylabel("Distance(km)", rotation=-90, va="bottom")
+        # Show the plot
+        plt.xticks(list(range(7)),week)
+        ax.xaxis.tick_top()
+        plt.yticks(list(range(len(self.yticks))),self.yticks)
+        return fig,ax
