@@ -101,7 +101,10 @@ def get_activity(access_token, idx):
 
 def make_weekly_distance_plot(runs):
     df = runs.distance_km.resample('W').sum()
-    fig = px.line(df,y='distance_km')
+    fig = px.line(df,y='distance_km',text='distance_km')
+    fig.update_traces(texttemplate="%{y:0.0f}")
+    fig.update_traces(textposition='top center')
+    fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
     return fig
 
 def recent_runs(runs):
@@ -111,7 +114,7 @@ def recent_runs(runs):
     col_map = {'start_date':'Date','name':'Name','distance_km':'Distance','min_km':'Pace','elapsed_time':'Time'}
     display_df = display_df[[col for col in col_map.keys()]]
     display_df = display_df.rename(col_map,axis=1)
-    display_df['Date'] = display_df.Date.dt.strftime('%d-%b-%Y')
+    display_df['Date'] = display_df.Date.dt.strftime('%d-%m-%Y')
     display_df['Time'] = display_df.Time.apply(format_seconds)
     return display_df
 
