@@ -37,6 +37,15 @@ def get_activities(access_token):
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
     my_dataset = requests.get(activites_url, headers=header, params=param).json()
     activities = pd.json_normalize(my_dataset)
+    df_list = [activities]
+    more=True
+    while more:
+        my_dataset = requests.get(activites_url, headers=header, params=param).json()
+        activities = pd.json_normalize(my_dataset)
+        if not len(activities):
+            more=False
+        df_list.append(activities)
+    activites = pd.concat(df_list,axis=1)
     return activities
 
 def clean_activities(activities):
