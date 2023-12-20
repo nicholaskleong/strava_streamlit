@@ -39,7 +39,7 @@ def get_activities(access_token):
     # activities = pd.json_normalize(my_dataset)
     df_list = []
     more=True
-    for page in range(1,20):
+    for page in range(1,5):
         my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
         activities = pd.json_normalize(my_dataset)
         df_list.append(activities)
