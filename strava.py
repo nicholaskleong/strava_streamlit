@@ -35,15 +35,13 @@ def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
     page=1
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
-    my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-    activities = pd.json_normalize(my_dataset)
-    df_list = [activities]
+    # my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+    # activities = pd.json_normalize(my_dataset)
+    df_list = []
     more=True
-    while more:
+    for page in range(1,20):
         my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
         activities = pd.json_normalize(my_dataset)
-        if len(activities):
-            page+=1
         df_list.append(activities)
     activities = pd.concat(df_list,axis=1)
     return activities
