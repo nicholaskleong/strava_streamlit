@@ -106,6 +106,13 @@ def make_weekly_distance_plot(runs):
     fig.update_traces(textposition='top center')
     fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
     return fig
+def make_yearly_distance_plot(runs):
+    df = runs.distance_km.resample('Y').sum()
+    fig = px.line(df,y='distance_km',text='distance_km')
+    fig.update_traces(texttemplate="%{y:0.0f}")
+    fig.update_traces(textposition='top center')
+    fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    return fig
 
 def recent_runs(runs):
     n = 10
