@@ -12,6 +12,6 @@ access_token = st.session_state['access_token']
 activities = init_data(access_token)
 act_list = st.multiselect('Activities',activities.sport_type.unique(), default = ['Run','TrailRun'])
 filtered_activities = filter_activities(activities,act_list)
-st.text(len(filtered_activites))
+st.text(len(filtered_activities))
 st.subheader('Yearly Distance')
 st.plotly_chart(make_yearly_distance_plot(filtered_activities))
