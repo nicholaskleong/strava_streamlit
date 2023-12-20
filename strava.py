@@ -33,7 +33,7 @@ def get_access_token(client_id,client_secret,refresh_token) ->str:
 
 def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
-    param = {'per_page': 200, 'page': 1}
+    param = {'per_page': 2000, 'page': 1}
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
     my_dataset = requests.get(activites_url, headers=header, params=param).json()
     activities = pd.json_normalize(my_dataset)
