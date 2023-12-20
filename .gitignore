@@ -4,3 +4,4 @@ dev*
 .env
 .DS_Store
 .ipynb_checkpoints
+dev.ipynb

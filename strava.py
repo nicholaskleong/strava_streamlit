@@ -35,16 +35,16 @@ def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
     page=1
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
-    # my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-    # activities = pd.json_normalize(my_dataset)
-    df_list = []
-    more=True
-    for page in [1]:
-        my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-        activities = pd.json_normalize(my_dataset)
-        df_list.append(activities)
-    activities = pd.concat(df_list)
-    print(activities.columns)
+    my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+    activities = pd.json_normalize(my_dataset)
+    # df_list = []
+    # more=True
+    # for page in [1]:
+    #     my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+    #     activities = pd.json_normalize(my_dataset)
+    #     df_list.append(activities)
+    # activities = pd.concat(df_list)
+    # print(activities.columns)
     return activities
 
 def clean_activities(activities):
