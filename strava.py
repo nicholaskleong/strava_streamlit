@@ -118,7 +118,7 @@ def make_yearly_distance_plot(runs):
     fig = px.line(df,y='distance_km',text='distance_km')
     fig.update_traces(texttemplate="%{y:0.0f}")
     fig.update_traces(textposition='top center')
-    fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    fig.update_traces(hovertemplate='%{x:%Y}<br>%{y:0.1f}km')
     return fig
 
 def recent_runs(runs):
