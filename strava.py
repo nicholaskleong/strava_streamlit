@@ -33,12 +33,8 @@ def get_access_token(client_id,client_secret,refresh_token) ->str:
 
 def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
-    page=1
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
-    # my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-    # activities = pd.json_normalize(my_dataset)
     df_list = []
-    more=True
     for page in range(1,20):
         my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
         print(f'Retrieved {len(my_dataset)} activities on page {page}')
