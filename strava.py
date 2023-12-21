@@ -35,16 +35,19 @@ def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
     page=1
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
-    my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-    activities = pd.json_normalize(my_dataset)
-    # df_list = []
-    # more=True
-    # for page in [1]:
-    #     my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
-    #     activities = pd.json_normalize(my_dataset)
-    #     df_list.append(activities)
-    # activities = pd.concat(df_list)
-    # print(activities.columns)
+    # my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+    # activities = pd.json_normalize(my_dataset)
+    df_list = []
+    more=True
+    for page in range(1,20):
+        my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+        print(f'Retrieved {len(my_dataset)} activities on page {page}')
+        if not len(my_dataset):
+            print('escaping because no more activites')
+            break
+        activities = pd.json_normalize(my_dataset)
+        df_list.append(activities)
+    activities = pd.concat(df_list)
     return activities
 
 def clean_activities(activities):
