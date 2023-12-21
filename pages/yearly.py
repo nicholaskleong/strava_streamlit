@@ -10,7 +10,9 @@ if 'access_token' not in st.session_state:
 
 access_token = st.session_state['access_token']
 activities = init_data(access_token)
-act_list = st.multiselect('Activities',activities.sport_type.unique(), default = ['Run','TrailRun'])
+act_options = activities.sport_type.unique()
+default_type = activities.groupby('sport_type').distance.sum().sort_values().index[-1]
+act_list = st.multiselect('Activities',act_options, default = [default_type])
 filtered_activities = filter_activities(activities,act_list)
 st.text(len(filtered_activities))
 st.subheader('Yearly Distance')

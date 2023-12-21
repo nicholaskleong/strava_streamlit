@@ -8,7 +8,7 @@ if 'access_token' not in st.session_state:
     strava_auth.login_header()
     strava_auth.authenticate()
 access_token = st.session_state['access_token']
-init_data(access_token)
+# init_data(access_token)
 filtered_activities = st.session_state['filtered_activities']
 
 
