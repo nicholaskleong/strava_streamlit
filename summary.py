@@ -18,7 +18,7 @@ access_token = st.session_state['access_token']
 activities = init_data(access_token)
 act_options = activities.sport_type.unique()
 default_types = [activities.groupby('sport_type').distance.sum().sort_values().index[-1]]
-default_types =['Run','Trail Run']
+default_types =['Run','TrailRun']
 act_list = st.multiselect('Activities',act_options, default = default_types)
 filtered_activities = filter_activities(activities,act_list)
 st.session_state['filtered_activities'] = filtered_activities
