@@ -74,7 +74,7 @@ def exchange_authorization_code(authorization_code):
     return strava_auth
 
 def authenticate():
-    query_params = st.query_params()
+    query_params = st.get_query_params()
     authorization_code = query_params.get("code", [None])[0]
 
     if authorization_code is None:
