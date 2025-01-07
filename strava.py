@@ -239,7 +239,7 @@ class Run(object):
 class Heatplot(object):
     def __init__(self,df,n_weeks,end_date = datetime.today()):
         tz = pytz.timezone('Australia/Sydney')
-        self.n_weeks=n_weeks
+        self.n_weeks=min(n_weeks,(datetime.today()-datetime(datetime.today().year,1,1)).days//7 +1)
         
         if end_date:
             self.end_date =end_date.replace(tzinfo=tz)
