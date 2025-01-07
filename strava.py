@@ -33,10 +33,17 @@ def get_access_token(client_id,client_secret,refresh_token) ->str:
 
 def get_activities(access_token):
     header = {'Authorization': 'Bearer ' + access_token}
-    param = {'per_page': 200, 'page': 1}
     activites_url = f'{BASE_URL}/api/v3/athlete/activities'
-    my_dataset = requests.get(activites_url, headers=header, params=param).json()
-    activities = pd.json_normalize(my_dataset)
+    df_list = []
+    for page in range(1,20):
+        my_dataset = requests.get(activites_url, headers=header, params={'per_page': 200, 'page': page}).json()
+        print(f'Retrieved {len(my_dataset)} activities on page {page}')
+        if not len(my_dataset):
+            print('escaping because no more activites')
+            break
+        activities = pd.json_normalize(my_dataset)
+        df_list.append(activities)
+    activities = pd.concat(df_list)
     return activities
 
 def clean_activities(activities):
@@ -105,6 +112,13 @@ def make_weekly_distance_plot(runs):
     fig.update_traces(texttemplate="%{y:0.0f}")
     fig.update_traces(textposition='top center')
     fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    return fig
+def make_yearly_distance_plot(runs):
+    df = runs.distance_km.resample('Y').sum()
+    fig = px.line(df,y='distance_km',text='distance_km')
+    fig.update_traces(texttemplate="%{y:0.0f}")
+    fig.update_traces(textposition='top center')
+    fig.update_traces(hovertemplate='%{x:%Y}<br>%{y:0.1f}km')
     return fig
 
 def recent_runs(runs):
