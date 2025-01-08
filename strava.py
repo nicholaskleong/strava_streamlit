@@ -107,11 +107,40 @@ def get_activity(access_token, idx):
     return activity
 
 def make_weekly_distance_plot(runs):
-    df = runs.distance_km.resample('W').sum()
-    fig = px.line(df,y='distance_km',text='distance_km')
-    fig.update_traces(texttemplate="%{y:0.0f}")
-    fig.update_traces(textposition='top center')
-    fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    # df = runs.distance_km.resample('W').sum()
+    # fig = px.line(df,y='distance_km',text='distance_km')
+    # fig.update_traces(texttemplate="%{y:0.0f}")
+    # fig.update_traces(textposition='top center')
+    # fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    df = runs
+    df['week_start'] =( df.index - pd.to_timedelta(df.index.dayofweek, unit='days')).date
+    df['run'] = df.groupby(pd.Grouper(freq='W')).cumcount() + 1
+
+    weekly_totals = df.groupby('week_start')['distance_km'].sum()
+
+    # Create a stacked bar chart
+    fig = px.bar(df, x='week_start', y='distance_km', color='run',hover_name='name',
+                title='Total Distance by Week',
+                labels={'week': 'Week', 'distance_km': 'Total Distance (km)', 'label': 'Run'},
+                color_continuous_scale='Viridis',
+                barmode='stack',  # Use 'group' mode for stacked bars
+                )
+
+    for week, total in weekly_totals.items():
+        fig.add_annotation(
+            x=week, 
+            y=total, 
+            text=f'{total:.0f}', 
+            showarrow=False, 
+    #         arrowhead=1, 
+            yshift=10  # Adjust yshift for annotation placement
+        )
+    fig.update_layout(
+        coloraxis_colorbar=dict(
+            tickvals=list(range(min(df['run']), max(df['run']) + 1)), 
+            ticktext=list(map(str, range(min(df['run']), max(df['run']) + 1)))
+        )
+    )
     return fig
 def make_yearly_distance_plot(runs):
     df = runs.distance_km.resample('Y').sum()
