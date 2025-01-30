@@ -27,8 +27,8 @@ st.session_state['filtered_activities'] = filtered_activities
 col1, col2, col3,col4 = st.columns(4)
 col1.plotly_chart(make_number(activites_per_week(filtered_activities),"Runs per Week",''),use_container_width=True)
 col2.plotly_chart(make_number(distance_this_year(filtered_activities),"Distance this Year",'km'),use_container_width=True)
-col3.plotly_chart(make_gauge(distance_this_month(filtered_activities),100,f"Distance {datetime.today().strftime('%B')}",'km'),use_container_width=True)
-col4.plotly_chart(make_gauge(distance_last_week(filtered_activities),40,f"Distance last 7 Days",'km'),use_container_width=True)
+col3.plotly_chart(make_gauge(distance_this_month(filtered_activities),200,f"Distance {datetime.today().strftime('%B')}",'km'),use_container_width=True)
+col4.plotly_chart(make_gauge(distance_last_week(filtered_activities),50,f"Distance last 7 Days",'km'),use_container_width=True)
 
 
 #Heatmap
