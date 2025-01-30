@@ -17,7 +17,7 @@ if 'access_token' not in st.session_state:
 access_token = st.session_state['access_token']
 activities = init_data(access_token)
 act_options = activities.sport_type.unique()
-default_types = [activities.groupby('sport_type').distance.sum().sort_values().index[-1]]
+# default_types = [activities.groupby('sport_type').distance.sum().sort_values().index[-1]]
 default_types =['Run','TrailRun']
 act_list = st.multiselect('Activities',act_options, default = default_types)
 filtered_activities = filter_activities(activities,act_list)
@@ -37,11 +37,11 @@ fig,ax = hm.make_heatmap()
 st.pyplot(fig,use_container_width=True)
 
 #Weekly Distance
-st.subheader('2023 Weekly Distance')
+st.subheader('Weekly Distance')
 # start_date = st.date_input('Start Date',value = datetime(2023,1,1))
 # weekly = runs.loc[start_date:]['distance_km'].resample('W').sum()
 # st.line_chart(weekly,y='distance_km')
 st.plotly_chart(make_weekly_distance_plot(filtered_activities.loc[datetime(2023,1,1,tzinfo=tz):]))
 
 st.subheader('Recent Runs')
-st.dataframe(recent_runs(filtered_activities), )
+st.dataframe(recent_runs(filtered_activities),hide_index=True )
