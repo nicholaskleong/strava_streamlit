@@ -1,6 +1,6 @@
 .streamlit
 *.pyc
-dev*
+dev*.ipynb
 .env
 .DS_Store
 .ipynb_checkpoints

@@ -4,3 +4,4 @@ polyline
 matplotlib
 httpx
 streamlit
+numpy==1.23.1

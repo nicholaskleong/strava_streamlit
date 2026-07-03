@@ -74,7 +74,7 @@ def init_data(access_token):
     return activities
 
 def activites_per_week(runs,start_date=datetime(datetime.today().replace(tzinfo=tz).year,1,1,tzinfo=tz)):
-    num_weeks = datetime.today().isocalendar()[1]
+    num_weeks = datetime.today().timetuple().tm_yday/7
     num_activites = len(runs[start_date:])
     runs_per_week = num_activites/num_weeks
     return runs_per_week
@@ -107,11 +107,40 @@ def get_activity(access_token, idx):
     return activity
 
 def make_weekly_distance_plot(runs):
-    df = runs.distance_km.resample('W').sum()
-    fig = px.line(df,y='distance_km',text='distance_km')
-    fig.update_traces(texttemplate="%{y:0.0f}")
-    fig.update_traces(textposition='top center')
-    fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    # df = runs.distance_km.resample('W').sum()
+    # fig = px.line(df,y='distance_km',text='distance_km')
+    # fig.update_traces(texttemplate="%{y:0.0f}")
+    # fig.update_traces(textposition='top center')
+    # fig.update_traces(hovertemplate='%{x}<br>%{y:0.1f}km')
+    df = runs
+    df['week_start'] =( df.index - pd.to_timedelta(df.index.dayofweek, unit='days')).date
+    df['run'] = df.groupby(pd.Grouper(freq='W')).cumcount() + 1
+
+    weekly_totals = df.groupby('week_start')['distance_km'].sum()
+
+    # Create a stacked bar chart
+    fig = px.bar(df, x='week_start', y='distance_km', color='run',hover_name='name',
+                title='Total Distance by Week',
+                labels={'week': 'Week', 'distance_km': 'Total Distance (km)', 'label': 'Run'},
+                color_continuous_scale='Viridis',
+                barmode='stack',  # Use 'group' mode for stacked bars
+                )
+
+    for week, total in weekly_totals.items():
+        fig.add_annotation(
+            x=week, 
+            y=total, 
+            text=f'{total:.0f}', 
+            showarrow=False, 
+    #         arrowhead=1, 
+            yshift=10  # Adjust yshift for annotation placement
+        )
+    fig.update_layout(
+        coloraxis_colorbar=dict(
+            tickvals=list(range(min(df['run']), max(df['run']) + 1)), 
+            ticktext=list(map(str, range(min(df['run']), max(df['run']) + 1)))
+        )
+    )
     return fig
 def make_yearly_distance_plot(runs):
     df = runs.distance_km.resample('Y').sum()
@@ -128,7 +157,8 @@ def recent_runs(runs):
     col_map = {'start_date':'Date','name':'Name','distance_km':'Distance','min_km':'Pace','elapsed_time':'Time'}
     display_df = display_df[[col for col in col_map.keys()]]
     display_df = display_df.rename(col_map,axis=1)
-    display_df['Date'] = display_df.Date.dt.strftime('%d-%m-%Y')
+    display_df = display_df.sort_values('Date',ascending=False)
+    display_df['Date'] = display_df.Date.dt.strftime('%d-%b-%Y')
     display_df['Time'] = display_df.Time.apply(format_seconds)
     return display_df
 
@@ -253,7 +283,7 @@ class Run(object):
 class Heatplot(object):
     def __init__(self,df,n_weeks,end_date = datetime.today()):
         tz = pytz.timezone('Australia/Sydney')
-        self.n_weeks=n_weeks
+        self.n_weeks=min(n_weeks,(datetime.today()-datetime(datetime.today().year,1,1)).days//7 +1)
         
         if end_date:
             self.end_date =end_date.replace(tzinfo=tz)
